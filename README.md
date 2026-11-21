@@ -13,6 +13,19 @@ copy accounts.example.json accounts.json   # 然后按 SKILL.md「首次使用�
 
 重开 Claude Code 后直接说：「导出我和 XX 的聊天记录」。
 
+### 用 Codex 等其他 AI 助手
+
+克隆到任意目录，在 AI 助手里打开这个目录作为项目，然后发：
+
+```text
+请先阅读根目录 AGENTS.md 和 SKILL.md，按其中流程帮我导出本机微信里和 XX 的聊天记录，现在先只做只读预检。
+账号由我确认；聊天内容、联系人、数据库、密钥和导出结果都不要发到对话或 GitHub；不要执行 git add/commit/push。
+```
+
+### 预检找不到账号？
+
+预检会自动读取微信记录的存储位置（`%APPDATA%\Tencent\xwechat\config\*.ini`）。仍找不到时，在微信「设置 → 文件管理」看存储位置，把它填进 `accounts.json` 的 `search_roots`，或运行 `python -I scripts/preflight.py --root "<存储位置>"`。
+
 ## 使用前提
 
 - Windows，微信 4.x 已登录目标账号，导出期间保持运行。

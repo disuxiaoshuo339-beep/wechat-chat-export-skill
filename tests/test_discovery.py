@@ -57,3 +57,29 @@ def test_authorization_rejects_ambiguous_duplicate_identifiers(tmp_path):
 
     with pytest.raises(ValueError, match="not unique"):
         authorize_account(candidates, "same")
+
+
+def test_configured_storage_roots_reads_custom_location(tmp_path):
+    from wechat_export.discovery import configured_storage_roots
+
+    storage = tmp_path / "自定义存储"
+    account = storage / "xwechat_files" / "wxid_fixture_ab12" / "db_storage" / "message"
+    account.mkdir(parents=True)
+    (account / "message_0.db").write_bytes(b"x" * 4096)
+    config = tmp_path / "config"
+    config.mkdir()
+    (config / "abc.ini").write_bytes(str(storage).encode("utf-8"))
+    (config / "noise.ini").write_bytes(b"not a path")
+    (config / "missing.ini").write_bytes(str(tmp_path / "nope").encode("utf-8"))
+
+    roots = configured_storage_roots(config)
+
+    assert roots == [storage / "xwechat_files", storage]
+    found = discover_accounts(roots)
+    assert [item.account_id for item in found] == ["wxid_fixture_ab12"]
+
+
+def test_configured_storage_roots_tolerates_missing_dir(tmp_path):
+    from wechat_export.discovery import configured_storage_roots
+
+    assert configured_storage_roots(tmp_path / "absent") == []

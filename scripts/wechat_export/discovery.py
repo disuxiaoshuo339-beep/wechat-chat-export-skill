@@ -23,9 +23,47 @@ class AccountCandidate:
         return self.has_contact_db and self.has_session_db and self.has_message_db
 
 
+def configured_storage_roots(config_dir: Path | None = None) -> list[Path]:
+    """微信 4.x 在「设置 → 文件管理」改过存储位置时，会把所选目录写进
+    %APPDATA%\\Tencent\\xwechat\\config\\*.ini（文件内容只有一行路径，
+    实际数据在该路径下的 xwechat_files）。只读这些小文件，不碰聊天数据。"""
+    if config_dir is None:
+        appdata = os.environ.get("APPDATA")
+        if not appdata:
+            return []
+        config_dir = Path(appdata) / "Tencent" / "xwechat" / "config"
+    if not config_dir.is_dir():
+        return []
+    roots: list[Path] = []
+    for ini in sorted(config_dir.glob("*.ini")):
+        try:
+            if ini.stat().st_size > 1024:
+                continue
+            raw = ini.read_bytes()
+        except OSError:
+            continue
+        text = ""
+        for encoding in ("utf-8", "gbk"):
+            try:
+                text = raw.decode(encoding).strip().strip("\x00").strip()
+                break
+            except UnicodeDecodeError:
+                continue
+        if not text or "\n" in text or len(text) > 260:
+            continue
+        base = Path(text)
+        if not base.is_absolute():
+            continue
+        for candidate in (base / "xwechat_files", base):
+            if candidate.is_dir() and candidate not in roots:
+                roots.append(candidate)
+    return roots
+
+
 def default_search_roots() -> list[Path]:
     profile = Path(os.environ.get("USERPROFILE", str(Path.home())))
     candidates = [
+        *configured_storage_roots(),
         profile / "xwechat_files",
         profile / "Documents" / "WeChat Files",
         profile / "Documents" / "xwechat_files",
