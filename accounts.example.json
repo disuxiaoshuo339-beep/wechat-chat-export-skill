@@ -1,0 +1,14 @@
+{
+  "_说明": "复制为 accounts.json 再填。search_roots：微信数据根目录（改过存储位置才需要，默认位置可留空）。accounts：别名 → 账号 ID（preflight.py 能列出）。output_root：运行目录，必须在微信数据目录之外。publish_dir：导出结果默认发布目录，可不填。silk_python：装了 pilk 的 Python，只有语音转 mp3 才需要。",
+  "search_roots": [
+    "D:\\WeChatData\\xwechat_files"
+  ],
+  "silk_python": "",
+  "accounts": {
+    "我的号": {
+      "account_id": "wxid_替换成preflight列出的ID",
+      "output_root": "D:\\微信聊天导出\\_运行",
+      "publish_dir": "D:\\微信聊天导出\\结果"
+    }
+  }
+}
